@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctor Doctor?
+  staff  Staff?
+}
+
+model Doctor {
+  id        Int    @id @default(autoincrement())
+  firstName String
+  lastName  String
+  phone     String
+  dni       String @unique
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @unique
+
+  specialtyId Int
+  specialty   Specialty @relation(fields: [specialtyId], references: [id])
+
+  appointment Appointment[]
+}
+
+model Patient {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  dni         String   @unique
+  dateOfBirth DateTime
+  address     String
+  phone       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id        Int      @id @default(autoincrement())
+  patientId Int
+  doctorId  Int
+  date      DateTime
+  status    String // e.g., 'scheduled', 'completed', 'canceled'  (pendiente, confirmado, atendido, ausente, cancelado)
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctor  Doctor  @relation(fields: [doctorId], references: [id])
+}
+
+model Specialty {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctors Doctor[]
+}
+
+model Staff {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  phone     String
+  dni       String @unique
+  role      String // e.g., 'receptionist', 'nurse', etc.
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @unique
+}

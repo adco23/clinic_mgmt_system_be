@@ -1,1 +1,0 @@
-# clinic_mgmt_system
