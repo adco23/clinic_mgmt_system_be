@@ -4,7 +4,7 @@ const errorHandler = (err, req, res, next) => {
 
   // 2. Determina el código de estado HTTP
   // Por defecto, un error interno del servidor
-  const statusCode = err.statusCode || 500; 
+  const statusCode = err.statusCode || 500;
 
   // 3. Prepara la respuesta de error
   let errorResponse = {
@@ -28,7 +28,7 @@ const errorHandler = (err, req, res, next) => {
       stack: err.stack,
     };
   }
-  
+
   // 5. Envía la respuesta JSON
   res.status(statusCode).json(errorResponse);
 };

@@ -12,14 +12,14 @@ exports.register = async (req, res, next) => {
     if (!username || !password || !email) return failResponse(res, Messages.ERROR_CREDENTIALS_REQUIRED, null, 400);
 
     const existingUser = await prisma.User.findUnique({
-      where: { username }
+      where: { username },
     });
 
     if (existingUser) return failResponse(res, Messages.ERROR_USER_ALREADY_EXISTS, null, 400);
 
     const existingEmail = await prisma.User.findUnique({
-      where: { email }
-    })
+      where: { email },
+    });
 
     if (existingEmail) return failResponse(res, Messages.ERROR_EMAIL_ALREADY_EXISTS, null, 400);
 

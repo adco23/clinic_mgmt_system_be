@@ -1,10 +1,10 @@
 /**
  * Maneja respuestas exitosas.
- * @param {Response} res 
- * @param {string} message 
- * @param {*} data 
+ * @param {Response} res
+ * @param {string} message
+ * @param {*} data
  * @param {number} [statusCode=200]
- * @returns 
+ * @returns
  */
 const successResponse = (res, message, data, statusCode = 200) => {
   return res.status(statusCode).json({
@@ -40,7 +40,7 @@ const failResponse = (res, message, errors, statusCode = 400) => {
  */
 const errorResponse = (res, message, error, statusCode = 500) => {
   // En producción, podrías querer registrar el error y enviar un mensaje genérico.
-  // console.error(error); 
+  // console.error(error);
   return res.status(statusCode).json({
     status: 'error',
     message,
@@ -48,7 +48,7 @@ const errorResponse = (res, message, error, statusCode = 500) => {
       code: error.code || 'UNKNOWN_ERROR', // Un código de error interno si lo tienes
       message: error.message || 'Error interno del servidor',
       // No incluyas stack traces en producción por seguridad
-      // stack: process.env.NODE_ENV === 'development' ? error.stack : undefined 
+      // stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     },
   });
 };
