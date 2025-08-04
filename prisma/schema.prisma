@@ -8,16 +8,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/*
+Relaciones
+
+User N ---- M Role
+User 1 ---- 1 Doctor
+User 1 ---- 1 Staff
+Doctor N ---- 1 Specialty
+Patient 1 ---- M Appointment
+Doctor 1 ---- M Appointment
+
+*/
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  username  String   @unique
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   doctor Doctor?
   staff  Staff?
+  roles UserRole[]
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users UserRole[]
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+  @@unique([userId, roleId])
 }
 
 model Doctor {
@@ -25,7 +57,7 @@ model Doctor {
   firstName String
   lastName  String
   phone     String
-  dni       String @unique
+
 
   user   User @relation(fields: [userId], references: [id])
   userId Int  @unique
@@ -42,7 +74,7 @@ model Patient {
   email       String   @unique
   dni         String   @unique
   dateOfBirth DateTime
-  address     String
+  address     String?
   phone       String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -78,8 +110,7 @@ model Staff {
   firstName String
   lastName  String
   phone     String
-  dni       String @unique
-  role      String // e.g., 'receptionist', 'nurse', etc.
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

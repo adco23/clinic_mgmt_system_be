@@ -1,149 +1,101 @@
 const { PrismaClient } = require('../generated/prisma');
 const prisma = new PrismaClient();
+const { Roles } = require('../src/utils/constants');
 
 async function main() {
-  // Users
-  const alice = await prisma.User.upsert({
-    where: { email: 'alice@prisma.io' },
+  // const createMany = await prisma.Role.createMany({
+  //   data: [
+  //     { id: 1, name: Roles.ADMIN },
+  //     { id: 2, name: Roles.GUEST },
+  //     { id: 3, name: Roles.DOCTOR },
+  //     { id: 4, name: Roles.RECEPTIONIST },
+  //     { id: 5, name: Roles.PATIENT },
+  //   ],
+  //   skipDuplicates: true,
+  // })
+
+  const pass = "$2a$12$BtCwvP9BZ/q/ms7m5Ftg7.adktLjczxl/oAdem/C94.tv0kDvh1RW";
+
+  const [adminRole, doctorRole, staffRole, guestRole] = await Promise.all([
+    prisma.Role.upsert({ where: { name: Roles.ADMIN }, update: {}, create: { name: Roles.ADMIN } }),
+    prisma.Role.upsert({ where: { name: Roles.DOCTOR }, update: {}, create: { name: Roles.DOCTOR } }),
+    prisma.Role.upsert({ where: { name: Roles.STAFF }, update: {}, create: { name: Roles.STAFF } }),
+    prisma.Role.upsert({ where: { name: Roles.GUEST }, update: {}, create: { name: Roles.GUEST } }),
+  ]);
+
+  const [cardiologySpecialty, generalMedicineSpecialty] = await Promise.all([
+    prisma.Specialty.upsert({ where: { name: 'Cardialgia' }, update: {}, create: { name: 'Cardialgia' } }),
+    prisma.Specialty.upsert({ where: { name: 'Medicina General' }, update: {}, create: { name: 'Medicina General' } })
+  ]);
+
+  const [doctorUser, adminUser] = await Promise.all([
+    prisma.User.create({ data: {
+      email: "doctor@mail.com",
+      username: "doctorUser",
+      password: pass,
+      roles: {
+        create: [
+          { role: { connect: { id: doctorRole.id }}}
+        ]
+      }
+    }}),
+    prisma.User.create({ data: {
+      email: "admin@mail.com",
+      username: "adminUser",
+      password: pass,
+      roles: {
+        create: [
+          { role: { connect: { id: adminRole.id }}},
+          { role: { connect: { id: staffRole.id }}},
+        ]
+      }
+    }})
+  ]);
+
+  const doctor = await prisma.Doctor.upsert({
+    where: { userId: doctorUser.id },
     update: {},
     create: {
-      email: 'alice@prisma.io',
-      username: 'alice',
-      password: '12345',
-    },
+      userId: doctorUser.id,
+      specialtyId: cardiologySpecialty.id,
+      firstName: "Doctor",
+      lastName: "Example",
+      phone: "1234567890",
+    }
   });
 
-  const bob = await prisma.User.upsert({
-    where: { email: 'bob@prisma.io' },
+  const staff = await prisma.Staff.upsert({
+    where: { userId: adminUser.id },
     update: {},
     create: {
-      email: 'bob@prisma.io',
-      username: 'bob',
-      password: '12345',
-    },
+      userId: adminUser.id,
+      firstName: "Staff",
+      lastName: "Example",
+      phone: "0987654321",
+    }
   });
 
-  const admin = await prisma.User.upsert({
-    where: { email: 'admin@prisma.io' },
-    update: {},
-    create: {
-      email: 'admin@prisma.io',
-      username: 'admin',
-      password: '12345',
-    },
-  });
-
-  // Specialties
-  const cardiology = await prisma.Specialty.upsert({
-    where: { name: 'Cardiology' },
-    update: {},
-    create: {
-      name: 'Cardiology',
-    },
-  });
-
-  const dermatology = await prisma.Specialty.upsert({
-    where: { name: 'Dermatology' },
-    update: {},
-    create: {
-      name: 'Dermatology',
-    },
-  });
-  const neurology = await prisma.Specialty.upsert({
-    where: { name: 'Neurology' },
-    update: {},
-    create: {
-      name: 'Neurology',
-    },
-  });
-
-  // Doctors
-  const doctorAlice = await prisma.Doctor.upsert({
-    where: { dni: '12345678' },
-    update: {},
-    create: {
-      firstName: 'Alice',
-      lastName: 'Smith',
-      phone: '123-456-7890',
-      dni: '12345678',
-      userId: alice.id,
-      specialtyId: cardiology.id,
-    },
-  });
-
-  const doctorBob = await prisma.Doctor.upsert({
-    where: { dni: '87654321' },
-    update: {},
-    create: {
-      firstName: 'Bob',
-      lastName: 'Johnson',
-      phone: '123-456-7890',
-      dni: '87654321',
-      userId: bob.id,
-      specialtyId: dermatology.id,
-    },
-  });
-
-  const staffCharlie = await prisma.Staff.upsert({
-    where: { dni: '11223344' },
-    update: {},
-    create: {
-      firstName: 'Charlie',
-      lastName: 'Williams',
-      phone: '123-456-7890',
-      dni: '11223344',
-      userId: admin.id,
-      role: 'receptionist', // Example role
-    },
-  });
-
-  // Patients
-  const patientAlice = await prisma.Patient.upsert({
-    where: { dni: '99887766' },
-    update: {},
-    create: {
-      dni: '99887766',
-      name: 'Alice Doe',
-      email: 'alice.doe@example.com',
-      phone: '123-456-7890',
-      address: '123 Main St, Springfield',
-      dateOfBirth: new Date('1990-01-01'),
-    },
-  });
-
-  const patientBob = await prisma.Patient.upsert({
-    where: { dni: '66554433' },
-    update: {},
-    create: {
-      dni: '66554433',
-      name: 'Bob Brown',
-      email: 'bob.brown@example.com',
-      phone: '123-456-7890',
-      address: '456 Elm St, Springfield',
-      dateOfBirth: new Date('1992-02-02'),
-    },
-  });
-  // Appointments
-  const appointment1 = await prisma.Appointment.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
-      date: new Date('2023-10-01T10:00:00Z'),
-      status: 'scheduled',
-      patientId: patientAlice.id,
-      doctorId: doctorAlice.id,
-    },
-  });
-  const appointment2 = await prisma.Appointment.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
-      date: new Date('2023-10-02T11:00:00Z'),
-      status: 'scheduled',
-      patientId: patientBob.id,
-      doctorId: doctorBob.id,
-    },
-  });
+  const patients = await prisma.patient.createMany({
+    data: [
+      {
+        name: "Patient1",
+        email: "patient1@mail.com",
+        dni: "12345678",
+        dateOfBirth: new Date('1990-01-01'),
+        address: "123 Main St",
+        phone: "1234567890",
+      },
+      {
+        name: "Patient2",
+        email: "patient2@mail.com",
+        dni: "12345679",
+        dateOfBirth: new Date('1990-01-01'),
+        address: "123 Main St",
+        phone: "1234567890",
+      },
+    ],
+    skipDuplicates: true
+  })
 }
 
 main()

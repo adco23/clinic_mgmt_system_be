@@ -8,7 +8,7 @@
  */
 const successResponse = (res, message, data, statusCode = 200) => {
   return res.status(statusCode).json({
-    status: 'success',
+    status: 'Success',
     message,
     data,
   });
@@ -24,7 +24,7 @@ const successResponse = (res, message, data, statusCode = 200) => {
  */
 const failResponse = (res, message, errors, statusCode = 400) => {
   return res.status(statusCode).json({
-    status: 'fail',
+    status: 'Fail',
     message,
     errors,
   });
@@ -42,7 +42,7 @@ const errorResponse = (res, message, error, statusCode = 500) => {
   // En producción, podrías querer registrar el error y enviar un mensaje genérico.
   // console.error(error);
   return res.status(statusCode).json({
-    status: 'error',
+    status: 'Error',
     message,
     error: {
       code: error.code || 'UNKNOWN_ERROR', // Un código de error interno si lo tienes
