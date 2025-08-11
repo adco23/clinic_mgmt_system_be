@@ -5,21 +5,40 @@ const { successResponse, failResponse, errorResponse } = require('../utils/respo
 exports.getAllDoctors = async (req, res) => {
   try {
     const doctors = await prisma.doctor.findMany();
-    return successResponse(res, Status.OK, Messages.DOCTOR_LIST_SUCCESS, doctors);
+    return successResponse(res, Status.OK, Messages.OK, doctors);
   } catch (error) {
     console.error('Error fetching doctors:', error);
-    return errorResponse(res, Status.INTERNAL_SERVER_ERROR, Messages.DOCTOR_LIST_FAIL);
+    return errorResponse(res, Status.INTERNAL_SERVER_ERROR, Messages.LIST_FAILED);
   }
 };
+
 exports.createDoctor = async (req, res) => {
   try {
-    const newDoctor = await prisma.doctor.create({
-      data: req.body,
+    const { firstName, lastName, specialty, email, phone, userId } = req.body;
+
+    if(!firstName || !lastName || !specialty || !userId) return failResponse(res, Messages.ERROR_MISSING_FIELDS, "", Status.BAD_REQUEST);
+
+    const existingDoctor = await prisma.Doctor.findFirst({
+      where: { userId }
     });
-    return successResponse(res, Status.CREATED, Messages.DOCTOR_CREATE_SUCCESS, newDoctor);
+
+    if (existingDoctor) return failResponse(res, Messages.ERROR_USER_ALREADY_EXISTS, "", Status.BAD_REQUEST);
+
+    const newProfile = await prisma.Doctor.create({
+      data: {
+        firstName,
+        lastName,
+        specialty,
+        email,
+        phone,
+        userId
+      }
+    });
+
+    return successResponse(res, Status.CREATED, Messages.CREATED, newProfile);
   } catch (error) {
     console.error('Error creating doctor:', error);
-    return errorResponse(res, Status.INTERNAL_SERVER_ERROR, Messages.DOCTOR_CREATE_FAIL);
+    return errorResponse(res, Messages.DOCTOR_CREATE_FAIL, Status.INTERNAL_SERVER_ERROR);
   }
 };
 exports.getDoctorById = async (req, res) => {

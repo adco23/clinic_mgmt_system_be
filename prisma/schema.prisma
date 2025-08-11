@@ -8,17 +8,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/*
-Relaciones
-
-User N ---- M Role
-User 1 ---- 1 Doctor
-User 1 ---- 1 Staff
-Doctor N ---- 1 Specialty
-Patient 1 ---- M Appointment
-Doctor 1 ---- M Appointment
-
-*/
+/**
+ * Relaciones
+ * User N ---- M Role
+ * User 1 ---- 1 Doctor
+ * User 1 ---- 1 Staff
+ * Doctor N ---- 1 Specialty
+ * Patient 1 ---- M Appointment
+ * Doctor 1 ---- M Appointment
+ */
 
 model User {
   id        Int      @id @default(autoincrement())
@@ -29,7 +27,7 @@ model User {
 
   doctor Doctor?
   staff  Staff?
-  roles UserRole[]
+  roles  UserRole[]
 }
 
 model Role {
@@ -56,8 +54,8 @@ model Doctor {
   id        Int    @id @default(autoincrement())
   firstName String
   lastName  String
-  phone     String
-
+  phone     String @default("")
+  email     String @default("")
 
   user   User @relation(fields: [userId], references: [id])
   userId Int  @unique
@@ -106,7 +104,7 @@ model Specialty {
 }
 
 model Staff {
-  id        Int      @id @default(autoincrement())
+  id        Int    @id @default(autoincrement())
   firstName String
   lastName  String
   phone     String

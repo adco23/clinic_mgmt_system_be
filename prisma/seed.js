@@ -3,18 +3,7 @@ const prisma = new PrismaClient();
 const { Roles } = require('../src/utils/constants');
 
 async function main() {
-  // const createMany = await prisma.Role.createMany({
-  //   data: [
-  //     { id: 1, name: Roles.ADMIN },
-  //     { id: 2, name: Roles.GUEST },
-  //     { id: 3, name: Roles.DOCTOR },
-  //     { id: 4, name: Roles.RECEPTIONIST },
-  //     { id: 5, name: Roles.PATIENT },
-  //   ],
-  //   skipDuplicates: true,
-  // })
-
-  const pass = "$2a$12$BtCwvP9BZ/q/ms7m5Ftg7.adktLjczxl/oAdem/C94.tv0kDvh1RW";
+  const pass = "$2a$12$BtCwvP9BZ/q/ms7m5Ftg7.adktLjczxl/oAdem/C94.tv0kDvh1RW"; //12345
 
   const [adminRole, doctorRole, staffRole, guestRole] = await Promise.all([
     prisma.Role.upsert({ where: { name: Roles.ADMIN }, update: {}, create: { name: Roles.ADMIN } }),
@@ -23,15 +12,16 @@ async function main() {
     prisma.Role.upsert({ where: { name: Roles.GUEST }, update: {}, create: { name: Roles.GUEST } }),
   ]);
 
-  const [cardiologySpecialty, generalMedicineSpecialty] = await Promise.all([
-    prisma.Specialty.upsert({ where: { name: 'Cardialgia' }, update: {}, create: { name: 'Cardialgia' } }),
-    prisma.Specialty.upsert({ where: { name: 'Medicina General' }, update: {}, create: { name: 'Medicina General' } })
+  const specialization = await Promise.all([
+    prisma.Specialty.upsert({ where: { name: 'Cardiología' }, update: {}, create: { name: 'Cardiología' } }),
+    prisma.Specialty.upsert({ where: { name: 'Medicina General' }, update: {}, create: { name: 'Medicina General' } }),
+    prisma.Specialty.upsert({ where: { name: 'Ginecología' }, update: {}, create: { name: 'Ginecología' } }),
+    prisma.Specialty.upsert({ where: { name: 'Pediatría' }, update: {}, create: { name: 'Pediatría' } })
   ]);
 
   const [doctorUser, adminUser] = await Promise.all([
     prisma.User.create({ data: {
       email: "doctor@mail.com",
-      username: "doctorUser",
       password: pass,
       roles: {
         create: [
@@ -41,7 +31,6 @@ async function main() {
     }}),
     prisma.User.create({ data: {
       email: "admin@mail.com",
-      username: "adminUser",
       password: pass,
       roles: {
         create: [
@@ -57,7 +46,7 @@ async function main() {
     update: {},
     create: {
       userId: doctorUser.id,
-      specialtyId: cardiologySpecialty.id,
+      specialtyId: specialization[1].id,
       firstName: "Doctor",
       lastName: "Example",
       phone: "1234567890",
